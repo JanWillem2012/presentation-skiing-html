@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skiën – Jan Willem de Wit | 2A</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00c8ff;
+    --deep: #061020;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    width:100%; height:100%;
+    overflow:hidden;
+    background:#000;
+    font-family:'DM Sans',sans-serif;
+    color:#fff;
+  }
+
+  /* ── Snow ── */
+  #snow {
+    position:fixed; inset:0;
+    pointer-events:none; z-index:2; opacity:.5;
+  }
+
+  /* ── Slide counter ── */
+  #counter {
+    position:fixed; bottom:1.4rem; right:1.8rem;
+    font-size:.68rem; letter-spacing:.18em;
+    color:rgba(255,255,255,.22); z-index:10;
+  }
+
+  /* ── Progress bar ── */
+  #progress {
+    position:fixed; bottom:0; left:0;
+    height:2px; background:var(--cyan);
+    transition: width .6s cubic-bezier(.77,0,.18,1);
+    z-index:10; opacity:.6;
+  }
+
+  /* ══════════════════════════════
+     SLIDER
+  ══════════════════════════════ */
+  #slider {
+    display:flex;
+    width:100vw; height:100vh;
+    transition: transform .75s cubic-bezier(.77,0,.18,1);
+    will-change:transform;
+  }
+
+  .slide {
+    flex-shrink:0;
+    width:100vw; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+
+  /* ══════════════════════════════
+     HELPERS
+  ══════════════════════════════ */
+  .tag {
+    font-size:.66rem; letter-spacing:.32em; text-transform:uppercase;
+    color:var(--cyan); margin-bottom:.7rem;
+  }
+  .accent { display:block; width:36px; height:3px; background:var(--cyan); border-radius:2px; margin-bottom:.85rem; }
+  .slide-num {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(5rem,8vw,8rem);
+    color:rgba(0,200,255,.055);
+    position:absolute; top:1rem; right:1.6rem;
+    line-height:1; pointer-events:none; user-select:none;
+  }
+  h2.title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(2.6rem,5.2vw,4.8rem);
+    line-height:1; letter-spacing:.04em; margin-bottom:1.1rem;
+  }
+  .body {
+    font-size:clamp(.8rem,1.22vw,1.02rem);
+    line-height:1.78; color:rgba(255,255,255,.7);
+    max-width:460px;
+  }
+  .split { display:flex; align-items:center; gap:5vw; padding:0 7vw; width:100%; }
+  .split-l, .split-r { flex:1; }
+
+  /* ── Entry anims ── */
+  .au  { opacity:0; transform:translateY(32px); transition:opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1); }
+  .al  { opacity:0; transform:translateX(-38px); transition:opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1); }
+  .ar  { opacity:0; transform:translateX(38px);  transition:opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1); }
+  .au.in,.al.in,.ar.in { opacity:1; transform:none; }
+
+  .sg > * { opacity:0; transform:translateY(20px); transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+  .sg.in > *:nth-child(1){ transition-delay:.04s }
+  .sg.in > *:nth-child(2){ transition-delay:.13s }
+  .sg.in > *:nth-child(3){ transition-delay:.22s }
+  .sg.in > *:nth-child(4){ transition-delay:.31s }
+  .sg.in > *:nth-child(5){ transition-delay:.40s }
+  .sg.in > *:nth-child(6){ transition-delay:.49s }
+  .sg.in > * { opacity:1; transform:none; }
+
+  /* ══════════════════════════════
+     S1 – TITEL
+  ══════════════════════════════ */
+  #s1 { background:radial-gradient(ellipse at 50% 62%, #0d2a52 0%, #040e1e 72%); flex-direction:column; }
+  .hero {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(5.5rem,13.5vw,13rem);
+    line-height:.86; letter-spacing:.04em;
+    background:linear-gradient(160deg,#fff 28%,var(--cyan) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 70px rgba(0,200,255,.2));
+  }
+  .hero-sub {
+    font-family:'Playfair Display',serif; font-style:italic;
+    font-size:clamp(1rem,2.2vw,1.65rem); color:rgba(255,255,255,.6); margin-top:.45rem;
+  }
+  .badge {
+    margin-top:2rem; display:inline-flex; gap:1.3rem; align-items:center;
+    border:1px solid rgba(0,200,255,.25); padding:.6rem 1.9rem; border-radius:100px;
+    backdrop-filter:blur(8px); background:rgba(0,200,255,.06);
+    font-size:clamp(.72rem,1.1vw,.88rem); letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.78);
+  }
+  .badge span { color:var(--cyan); font-weight:600; }
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-11px) rotate(2deg)} }
+  @keyframes pulse { 0%,100%{opacity:.25} 50%{opacity:.8} }
+
+  /* ══════════════════════════════
+     S2 – WAT IS SKIËN
+  ══════════════════════════════ */
+  #s2 { background:linear-gradient(138deg,#071830 0%,#0d2a52 58%,#071830 100%); }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; margin-top:1.7rem; }
+  .stat-box { background:rgba(255,255,255,.04); border:1px solid rgba(0,200,255,.13); border-radius:11px; padding:.95rem 1.15rem; }
+  .stat-n { font-family:'Bebas Neue',sans-serif; font-size:2.4rem; color:var(--cyan); line-height:1; }
+  .stat-l { font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.38); margin-top:.18rem; }
+  .float-fig { animation:float 4s ease-in-out infinite; }
+
+  /* ══════════════════════════════
+     S3 – GESCHIEDENIS
+  ══════════════════════════════ */
+  #s3 { background:linear-gradient(180deg,#0a1a30 0%,#112240 100%); flex-direction:column; padding:0 8vw; }
+  .tl { position:relative; max-width:820px; width:100%; margin-top:1.5rem; }
+  .tl::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:2px; background:linear-gradient(180deg,transparent,var(--cyan),transparent); transform:translateX(-50%); }
+  .tl-row { display:flex; justify-content:flex-end; padding-right:calc(50% + 2.2rem); margin-bottom:1.2rem; position:relative; }
+  .tl-row:nth-child(even){ justify-content:flex-start; padding-right:0; padding-left:calc(50% + 2.2rem); }
+  .tl-dot { position:absolute; left:50%; top:.85rem; width:12px; height:12px; background:var(--cyan); border-radius:50%; transform:translateX(-50%); box-shadow:0 0 11px var(--cyan); }
+  .tl-card { background:rgba(255,255,255,.05); border:1px solid rgba(0,200,255,.17); border-radius:10px; padding:.85rem 1.1rem; max-width:300px; }
+  .tl-year { font-family:'Bebas Neue',sans-serif; font-size:1.45rem; color:var(--cyan); }
+  .tl-txt { font-size:.78rem; color:rgba(255,255,255,.63); line-height:1.6; margin-top:.12rem; }
+
+  /* ══════════════════════════════
+     S4 – SOORTEN
+  ══════════════════════════════ */
+  #s4 { background:radial-gradient(ellipse at 30% 68%,#0c2a46 0%,#060e1c 70%); flex-direction:column; padding:0 6vw; }
+  .cards { display:flex; gap:1.2rem; margin-top:1.9rem; flex-wrap:wrap; justify-content:center; width:100%; max-width:1020px; }
+  .ski-card { flex:1 1 185px; max-width:215px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:17px; padding:1.5rem 1.1rem; text-align:center; position:relative; overflow:hidden; transition:transform .3s,border-color .3s,box-shadow .3s; }
+  .ski-card:hover { transform:translateY(-6px); border-color:var(--cyan); box-shadow:0 16px 42px rgba(0,200,255,.13); }
+  .ski-card .ico { font-size:2.6rem; margin-bottom:.65rem; }
+  .ski-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.45rem; letter-spacing:.05em; margin-bottom:.38rem; }
+  .ski-card p { font-size:.76rem; color:rgba(255,255,255,.5); line-height:1.6; }
+  .ca { position:absolute; top:0; left:0; right:0; height:3px; }
+
+  /* ══════════════════════════════
+     S5 – UITRUSTING
+  ══════════════════════════════ */
+  #s5 { background:linear-gradient(145deg,#071828 0%,#0d2544 100%); }
+  .gear { list-style:none; margin-top:1.3rem; display:flex; flex-direction:column; gap:.82rem; max-width:470px; width:100%; }
+  .gear li { display:flex; align-items:center; gap:1rem; background:rgba(255,255,255,.04); border:1px solid rgba(0,200,255,.1); border-radius:9px; padding:.75rem 1rem; transition:background .2s,border-color .2s; }
+  .gear li:hover { background:rgba(0,200,255,.07); border-color:rgba(0,200,255,.3); }
+  .gi { font-size:1.6rem; min-width:2rem; text-align:center; }
+  .ginfo h4 { font-size:.86rem; font-weight:600; margin-bottom:.1rem; }
+  .ginfo p { font-size:.72rem; color:rgba(255,255,255,.42); }
+
+  /* ══════════════════════════════
+     S6 – SKIGEBIEDEN
+  ══════════════════════════════ */
+  #s6 { background:linear-gradient(160deg,#050e1c 0%,#0b2040 100%); flex-direction:column; padding:0 6vw; }
+  .resorts { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1.7rem; max-width:920px; width:100%; }
+  .rc { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:1.1rem; transition:transform .3s,box-shadow .3s,border-color .3s; }
+  .rc:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,200,255,.1); border-color:rgba(0,200,255,.26); }
+  .rc .flag { font-size:1.8rem; margin-bottom:.45rem; }
+  .rc h3 { font-family:'Bebas Neue',sans-serif; font-size:1.35rem; letter-spacing:.05em; color:var(--cyan); }
+  .rc p { font-size:.75rem; color:rgba(255,255,255,.5); margin-top:.22rem; line-height:1.5; }
+  .rtag { display:inline-block; background:rgba(0,200,255,.1); color:var(--cyan); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .52rem; border-radius:50px; margin-top:.45rem; }
+
+  /* ══════════════════════════════
+     S7 – TECHNIEKEN
+  ══════════════════════════════ */
+  #s7 { background:radial-gradient(ellipse at 60% 40%,#0d2a52 0%,#06101e 70%); }
+  .techs { margin-top:1.3rem; display:flex; flex-direction:column; gap:.95rem; max-width:420px; width:100%; }
+  .ti { display:flex; gap:.85rem; align-items:flex-start; }
+  .tn { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; color:var(--cyan); line-height:1; min-width:1.7rem; opacity:.52; }
+  .tc h4 { font-size:.92rem; font-weight:600; margin-bottom:.16rem; }
+  .tc p { font-size:.77rem; color:rgba(255,255,255,.5); line-height:1.55; }
+
+  /* ══════════════════════════════
+     S8 – FUN FACTS
+  ══════════════════════════════ */
+  #s8 { background:linear-gradient(135deg,#041018 0%,#0c2540 100%); flex-direction:column; padding:0 6vw; }
+  .facts { display:grid; grid-template-columns:repeat(2,1fr); gap:1.1rem; margin-top:1.7rem; max-width:820px; width:100%; }
+  .fc { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:1.2rem; display:flex; gap:.85rem; align-items:flex-start; transition:border-color .25s,background .25s; }
+  .fc:hover { border-color:rgba(0,200,255,.26); background:rgba(0,200,255,.05); }
+  .fe { font-size:1.95rem; }
+  .fc h4 { font-family:'Bebas Neue',sans-serif; font-size:1.18rem; letter-spacing:.04em; color:var(--cyan); margin-bottom:.22rem; }
+  .fc p { font-size:.78rem; color:rgba(255,255,255,.56); line-height:1.6; }
+
+  /* ══════════════════════════════
+     S9 – VIDEO (LAATSTE SLIDE)
+  ══════════════════════════════ */
+  #s9 { background:radial-gradient(ellipse at 50% 50%,#0d1f38 0%,#020810 100%); flex-direction:column; gap:1.6rem; }
+  .vid-wrap {
+    width:320px;
+    border-radius:18px; overflow:hidden;
+    border:2px solid rgba(0,200,255,.28);
+    box-shadow:0 0 60px rgba(0,200,255,.18), 0 0 120px rgba(0,200,255,.07);
+    background:#000;
+  }
+  /* video tag fills wrapper */
+  .vid-wrap video {
+    width:100%; display:block;
+    border-radius:16px;
+  }
+  /* placeholder shown when no src */
+  .vid-placeholder {
+    width:100%; aspect-ratio:9/16;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:.8rem; padding:2rem; text-align:center;
+    color:rgba(255,255,255,.4); font-size:.82rem;
+  }
+  .vid-placeholder .big { font-size:2.8rem; }
+</style>
+</head>
+<body>
+
+<canvas id="snow"></canvas>
+<div id="counter">1 / 9</div>
+<div id="progress" style="width:11.1%"></div>
+
+<div id="slider">
+
+  <!-- ══ S1 TITEL ══ -->
+  <section class="slide" id="s1">
+    <svg style="position:absolute;bottom:0;left:0;width:100%;height:60%;z-index:0" viewBox="0 0 1440 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0d2d55"/><stop offset="100%" stop-color="#071828"/></linearGradient>
+        <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a4a80"/><stop offset="100%" stop-color="#0a1e38"/></linearGradient>
+        <linearGradient id="sc" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(255,255,255,.88)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></linearGradient>
+      </defs>
+      <polygon points="0,500 200,178 400,338 600,108 800,268 1000,93 1200,253 1440,133 1440,500" fill="url(#m2)" opacity=".7"/>
+      <polygon points="0,500 300,268 500,408 700,193 900,353 1100,173 1300,313 1440,213 1440,500" fill="url(#m1)"/>
+      <polygon points="600,108 558,192 642,192" fill="url(#sc)" opacity=".88"/>
+      <polygon points="1000,93 956,185 1044,185" fill="url(#sc)" opacity=".88"/>
+      <polygon points="200,178 161,252 239,252" fill="url(#sc)" opacity=".55"/>
+    </svg>
+    <div style="position:relative;z-index:3;text-align:center">
+      <p class="tag au" style="transition-delay:.08s">📖 Presentatie over</p>
+      <h1 class="hero au">SKIËN</h1>
+      <p class="hero-sub au" style="transition-delay:.18s">De ultieme sneeuwsport</p>
+      <div class="badge au" style="transition-delay:.32s"><span>Jan Willem de Wit</span> · Klas 2A</div>
+    </div>
+  </section>
+
+  <!-- ══ S2 WAT IS SKIËN ══ -->
+  <section class="slide" id="s2">
+    <div class="slide-num">02</div>
+    <div class="split">
+      <div class="split-l">
+        <p class="tag au">01 — Introductie</p>
+        <span class="accent au" style="transition-delay:.08s"></span>
+        <h2 class="title au" style="transition-delay:.08s">WAT IS<br>SKIËN?</h2>
+        <p class="body au" style="transition-delay:.18s">Skiën is een sport waarbij je met lange ski's aan je voeten een besneeuwde helling afdaalt. Het is een van de populairste wintersportactiviteiten ter wereld — zowel als recreatie als competitiesport.<br><br>Je gebruikt stokken voor balans en sturing. Van rustig genieten tot 140 km/u in de afdaling — skiën heeft voor ieder wat.</p>
+        <div class="stat-grid sg" style="max-width:330px">
+          <div class="stat-box"><div class="stat-n">400M+</div><div class="stat-l">Skiërs wereldwijd</div></div>
+          <div class="stat-box"><div class="stat-n">140</div><div class="stat-l">km/u max snelheid</div></div>
+          <div class="stat-box"><div class="stat-n">67</div><div class="stat-l">Olympische edities</div></div>
+          <div class="stat-box"><div class="stat-n">5000+</div><div class="stat-l">Skigebieden</div></div>
+        </div>
+      </div>
+      <div class="split-r ar" style="display:flex;align-items:center;justify-content:center">
+        <svg class="float-fig" viewBox="0 0 400 400" width="300" xmlns="http://www.w3.org/2000/svg">
+          <defs><radialGradient id="g1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(0,200,255,.13)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
+          <circle cx="200" cy="200" r="180" fill="url(#g1)"/>
+          <ellipse cx="200" cy="160" rx="22" ry="28" fill="#00c8ff" opacity=".9"/>
+          <circle cx="200" cy="125" r="18" fill="#ffd58a"/>
+          <path d="M183,120 Q183,105 200,105 Q217,105 217,120" fill="#e63030"/>
+          <rect x="188" y="118" width="24" height="10" rx="5" fill="#002244" opacity=".9"/>
+          <line x1="182" y1="158" x2="155" y2="200" stroke="#aad4ff" stroke-width="4" stroke-linecap="round"/>
+          <line x1="155" y1="200" x2="148" y2="228" stroke="#aad4ff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="218" y1="158" x2="245" y2="200" stroke="#aad4ff" stroke-width="4" stroke-linecap="round"/>
+          <line x1="245" y1="200" x2="252" y2="228" stroke="#aad4ff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="193" y1="185" x2="178" y2="228" stroke="#1460a8" stroke-width="7" stroke-linecap="round"/>
+          <line x1="207" y1="185" x2="222" y2="228" stroke="#1460a8" stroke-width="7" stroke-linecap="round"/>
+          <rect x="148" y="226" width="75" height="8" rx="4" fill="#00c8ff"/>
+          <rect x="170" y="226" width="75" height="8" rx="4" fill="#00c8ff"/>
+          <circle cx="145" cy="236" r="4" fill="white" opacity=".6"/>
+          <circle cx="138" cy="243" r="3" fill="white" opacity=".4"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S3 GESCHIEDENIS ══ -->
+  <section class="slide" id="s3">
+    <div class="slide-num">03</div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <div style="text-align:center">
+        <p class="tag au">02 — Geschiedenis</p>
+        <span class="accent au" style="transition-delay:.08s;margin:0 auto .85rem"></span>
+        <h2 class="title au" style="transition-delay:.08s;text-align:center">DE OORSPRONG VAN SKIËN</h2>
+      </div>
+      <div class="tl sg">
+        <div class="tl-row"><div class="tl-dot"></div><div class="tl-card"><div class="tl-year">~5000 v.Chr.</div><p class="tl-txt">Oudste ski-achtige voorwerpen gevonden in Rusland en Scandinavië. Gebruikt bij de jacht op sneeuw.</p></div></div>
+        <div class="tl-row"><div class="tl-dot"></div><div class="tl-card"><div class="tl-year">1850</div><p class="tl-txt">Sondre Norheim ontwikkelt de eerste skibinding. Hij wordt gezien als vader van het moderne skiën.</p></div></div>
+        <div class="tl-row"><div class="tl-dot"></div><div class="tl-card"><div class="tl-year">1924</div><p class="tl-txt">Skiën debuteert op de Olympische Winterspelen in Chamonix, Frankrijk.</p></div></div>
+        <div class="tl-row"><div class="tl-dot"></div><div class="tl-card"><div class="tl-year">1990s</div><p class="tl-txt">Carvingski's revolutioneren de sport — soepelere bochten, meer controle op hoge snelheid.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S4 SOORTEN ══ -->
+  <section class="slide" id="s4">
+    <div class="slide-num">04</div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <div style="text-align:center">
+        <p class="tag au">03 — Varianten</p>
+        <span class="accent au" style="transition-delay:.08s;margin:0 auto .85rem"></span>
+        <h2 class="title au" style="transition-delay:.08s;text-align:center">SOORTEN SKIËN</h2>
+      </div>
+      <div class="cards sg">
+        <div class="ski-card"><div class="ca" style="background:linear-gradient(90deg,#00c8ff,#005f99)"></div><div class="ico">🏔️</div><h3>Alpineskiën</h3><p>Afdalen langs steile hellingen. Slalom, reuzenslalom en afdaling.</p></div>
+        <div class="ski-card"><div class="ca" style="background:linear-gradient(90deg,#f5c842,#c49b00)"></div><div class="ico">🌲</div><h3>Langlaufen</h3><p>Skiën over vlak terrein. Puur uithoudingsvermogen.</p></div>
+        <div class="ski-card"><div class="ca" style="background:linear-gradient(90deg,#e63030,#991f1f)"></div><div class="ico">🌀</div><h3>Freestyle</h3><p>Springen, trucs en acrobatiek. Halfpipe, moguls en slopestyle.</p></div>
+        <div class="ski-card"><div class="ca" style="background:linear-gradient(90deg,#00e5b0,#007a5e)"></div><div class="ico">🎯</div><h3>Biathlon</h3><p>Langlaufen én schieten. Olympisch en spannend.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S5 UITRUSTING ══ -->
+  <section class="slide" id="s5">
+    <div class="slide-num">05</div>
+    <div class="split">
+      <div class="split-l al">
+        <p class="tag">04 — Gear</p>
+        <span class="accent"></span>
+        <h2 class="title">WAT HEB JE<br>NODIG?</h2>
+        <p class="body">Goede uitrusting is essentieel bij het skiën. Veiligheid staat altijd op de eerste plaats, daarna comfort en snelheid.</p>
+      </div>
+      <div class="split-r ar">
+        <ul class="gear sg">
+          <li><span class="gi">⛷️</span><div class="ginfo"><h4>Ski's</h4><p>Lengte afhankelijk van niveau. Carvingski's voor beginners.</p></div></li>
+          <li><span class="gi">👢</span><div class="ginfo"><h4>Skischoenen</h4><p>Stijve laarzen die klikken in de binding. Goede pasvorm is cruciaal.</p></div></li>
+          <li><span class="gi">⛑️</span><div class="ginfo"><h4>Helm</h4><p>Verplicht voor kinderen, sterk aanbevolen voor iedereen.</p></div></li>
+          <li><span class="gi">🥽</span><div class="ginfo"><h4>Skibril</h4><p>Beschermt tegen UV, wind en sneeuw.</p></div></li>
+          <li><span class="gi">🧤</span><div class="ginfo"><h4>Handschoenen & kleding</h4><p>Waterdichte buitenlaag met warme lagen eronder.</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S6 SKIGEBIEDEN ══ -->
+  <section class="slide" id="s6">
+    <div class="slide-num">06</div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <div style="text-align:center">
+        <p class="tag au">05 — Bestemmingen</p>
+        <span class="accent au" style="transition-delay:.08s;margin:0 auto .85rem"></span>
+        <h2 class="title au" style="transition-delay:.08s;text-align:center">BEKENDE SKIGEBIEDEN</h2>
+      </div>
+      <div class="resorts sg">
+        <div class="rc"><div class="flag">🇫🇷</div><h3>Chamonix</h3><p>Aan de voet van de Mont Blanc. Legendarisch skigebied voor experts.</p><span class="rtag">Experts</span></div>
+        <div class="rc"><div class="flag">🇦🇹</div><h3>St. Anton</h3><p>305 km pistes en wild après-ski. Oostenrijkse klassieker.</p><span class="rtag">All-round</span></div>
+        <div class="rc"><div class="flag">🇨🇭</div><h3>Zermatt</h3><p>Uitzicht op het Matterhorn. Sneeuw gegarandeerd tot in de zomer.</p><span class="rtag">Luxe</span></div>
+        <div class="rc"><div class="flag">🇮🇹</div><h3>Cortina</h3><p>Dolomieten-parel. Gastheer Olympische Spelen 2026.</p><span class="rtag">Olympisch</span></div>
+        <div class="rc"><div class="flag">🇺🇸</div><h3>Aspen</h3><p>Colorado's glamour-resort. Vier bergen, wereld-top.</p><span class="rtag">Premium</span></div>
+        <div class="rc"><div class="flag">🇯🇵</div><h3>Niseko</h3><p>Japan's poedersneeuw-paradijs. 15+ meter sneeuwval per jaar.</p><span class="rtag">Powder</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S7 TECHNIEKEN ══ -->
+  <section class="slide" id="s7">
+    <div class="slide-num">07</div>
+    <div class="split">
+      <div class="split-l al">
+        <p class="tag">06 — Techniek</p>
+        <span class="accent"></span>
+        <h2 class="title">HOE LEER JE<br>SKIËN?</h2>
+        <p class="body">Van eerste snowplow tot vloeiende carvingbochten — iedereen begint hetzelfde. Stap voor stap wordt het beter.</p>
+      </div>
+      <div class="split-r ar">
+        <div class="techs sg">
+          <div class="ti"><div class="tn">1</div><div class="tc"><h4>Pizzapuntje (snowplow)</h4><p>Ski-punten bij elkaar, hielen uit. Remt vanzelf. De basis voor elke beginner.</p></div></div>
+          <div class="ti"><div class="tn">2</div><div class="tc"><h4>Parallelbochten</h4><p>Beide ski's parallel draaien. Vloeiend en snel na de snowplow.</p></div></div>
+          <div class="ti"><div class="tn">3</div><div class="tc"><h4>Carven</h4><p>Op de kant van de ski rijden. Scherpe bochten en meer controle.</p></div></div>
+          <div class="ti"><div class="tn">4</div><div class="tc"><h4>Off-piste</h4><p>Buiten de pistes door diepe poedersneeuw. Voor gevorderde skiërs.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S8 FUN FACTS ══ -->
+  <section class="slide" id="s8">
+    <div class="slide-num">08</div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <div style="text-align:center">
+        <p class="tag au">07 — Weetjes</p>
+        <span class="accent au" style="transition-delay:.08s;margin:0 auto .85rem"></span>
+        <h2 class="title au" style="transition-delay:.08s;text-align:center">FUN FACTS 🤯</h2>
+      </div>
+      <div class="facts sg">
+        <div class="fc"><span class="fe">⚡</span><div><h4>Snelste skiër ooit</h4><p>Ivan Origone haalde in 2016 een snelheid van 254,9 km/u op ski's — sneller dan de meeste treinen!</p></div></div>
+        <div class="fc"><span class="fe">🏔️</span><div><h4>Hoogste skipiste</h4><p>De Yala Glacier in Tibet ligt op 6.000 meter hoogte. Zelfs ademhalen is er een uitdaging.</p></div></div>
+        <div class="fc"><span class="fe">🇳🇱</span><div><h4>Nederland & skiën</h4><p>Geen bergen, maar ~2,5 miljoen Nederlanders gaan elk jaar op wintersport in de Alpen!</p></div></div>
+        <div class="fc"><span class="fe">☀️</span><div><h4>Kunstsneeuw</h4><p>Meer dan 70% van de Europese skigebieden gebruikt sneeuwkanonnen door klimaatverandering.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S9 VIDEO (EINDE) ══ -->
+  <!--
+  ZET HIER JOUW VIDEO-URL:
+  Vervang  JE_VIDEO_URL.mp4  met de echte link naar jouw mp4-bestand.
+  -->
+  <section class="slide" id="s9" style="background:#000;padding:0;">
+    <video id="skiVideo" controls loop playsinline
+           src="JE_VIDEO_URL.mp4"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;">
+    </video>
+  </section>
+
+</div><!-- /#slider -->
+
+<script>
+/* ═══════════════════════════════
+   FULLSCREEN bij laden
+═══════════════════════════════ */
+/* ═══════════════════════════════
+   FULLSCREEN bij eerste interactie (slide 1)
+═══════════════════════════════ */
+function tryFullscreen() {
+  if (!document.fullscreenElement) {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (req) req.call(el).catch(() => {});
+  }
+}
+// Probeer al bij laden (werkt als browser het toestaat)
+document.addEventListener('DOMContentLoaded', () => tryFullscreen());
+// Zeker bij eerste klik/toets
+document.addEventListener('click', tryFullscreen, { once: true });
+document.addEventListener('keydown', tryFullscreen, { once: true });
+
+/* ═══════════════════════════════
+   SLIDER
+═══════════════════════════════ */
+const slider = document.getElementById('slider');
+const slides = document.querySelectorAll('.slide');
+const N      = slides.length;
+let cur      = 0;
+let busy     = false;
+
+function goTo(idx) {
+  if (busy || idx === cur || idx < 0 || idx >= N) return;
+  busy = true;
+  clearAnim(cur);
+  cur = idx;
+  slider.style.transform = `translateX(-${cur * 100}vw)`;
+  document.getElementById('counter').textContent = (cur + 1) + ' / ' + N;
+  document.getElementById('progress').style.width = ((cur + 1) / N * 100) + '%';
+  setTimeout(() => {
+    fireAnim(cur);
+    busy = false;
+    // Laatste slide: video starten met geluid
+    if (cur === N - 1) {
+      const vid = document.getElementById('skiVideo');
+      if (vid) {
+        vid.muted = false;
+        vid.play().catch(() => { vid.muted = true; vid.play(); });
+      }
+    }
+  }, 720);
+}
+
+function clearAnim(i) {
+  slides[i].querySelectorAll('.au,.al,.ar,.sg').forEach(el => el.classList.remove('in'));
+}
+
+function fireAnim(i) {
+  slides[i].querySelectorAll('.au,.al,.ar').forEach(el => el.classList.add('in'));
+  slides[i].querySelectorAll('.sg').forEach(el => el.classList.add('in'));
+}
+
+/* fire first slide */
+fireAnim(0);
+
+/* keyboard */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); goTo(cur + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                    { e.preventDefault(); goTo(cur - 1); }
+});
+
+/* touch swipe */
+let tx = null;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend',   e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) goTo(dx < 0 ? cur + 1 : cur - 1);
+  tx = null;
+});
+
+/* ═══════════════════════════════
+   SNOW
+═══════════════════════════════ */
+const cv  = document.getElementById('snow');
+const ctx = cv.getContext('2d');
+function rs() { cv.width = innerWidth; cv.height = innerHeight; }
+rs(); window.addEventListener('resize', rs);
+const fl = Array.from({length:120}, () => ({
+  x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+  r: Math.random() * 2 + .5, s: Math.random() * .8 + .3,
+  w: Math.random() * .4 - .2, o: Math.random() * .45 + .15
+}));
+(function snow() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  fl.forEach(f => {
+    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${f.o})`; ctx.fill();
+    f.y += f.s; f.x += f.w;
+    if (f.y > cv.height) { f.y = -4; f.x = Math.random() * cv.width; }
+    if (f.x > cv.width) f.x = 0;
+    if (f.x < 0) f.x = cv.width;
+  });
+  requestAnimationFrame(snow);
+})();
+</script>
+</body>
+</html>
